@@ -13,7 +13,7 @@ class Audio(BaseModel):
     id: int
     filename: str
     file_path: str
-    duration: int
+    duration: float
     size: float
     data: str
     latitude: float
@@ -24,11 +24,15 @@ class Audio(BaseModel):
 def index():
     return {"greetings": "Welcome to FUSA"}
 
-@app.get("/audios")
+@app.get("/health")
+def health():
+    return {"status": "200"}
+
+@app.get("/audio")
 def get_audios():
     return db
 
-@app.get("/audios/{audio_id}")
+@app.get("/audio/{audio_id}")
 def get_audio(audio_id: int):
     audio = audio_id - 1
     return db[audio]
