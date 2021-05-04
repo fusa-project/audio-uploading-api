@@ -1,24 +1,14 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends, HTTPException
 import datetime
 from audio_queueing import AudioQueueing
+from database import SessionLocal, engine, get_db
+from schemas import Audio
+import models
 
+models.Base.metadata.create_all(bind=engine)
 queue = AudioQueueing()
 
 app = FastAPI()
-
-db = []
-
-class Audio(BaseModel):
-    id: int
-    filename: str
-    file_path: str
-    duration: float
-    size: float
-    data: str
-    latitude: float
-    longitude: float
-    recorded_at: int
 
 @app.get("/")
 def index():
@@ -28,24 +18,46 @@ def index():
 def health():
     return {"status": "200"}
 
-@app.get("/audio")
-def get_audios():
-    return db
+@app.get("/audio/}")
+def get_audios(db=Depends(get_db)):
+    return db.query(models.Audio).all()
 
 @app.get("/audio/{audio_id}")
-def get_audio(audio_id: int):
-    audio = audio_id - 1
-    return db[audio]
+def get_audio(audio_id: int, db=Depends(get_db)):
+    audio = db.query(models.Audio).filter(
+        models.Audio.id == audio_id).first()
+    if audio:
+        return audio
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail=f'No audio found for id {audio_id}')
 
-@app.post("/add_audio")
-async def add_audio(audio: Audio):
-    data = audio.dict()
-    db.append(data)
-    host = "localhost"
-    queue.send_audio(host, data)
-    return db[-1]
+@app.post("/add_audio/")
+async def add_audio(audio: Audio, db=Depends(get_db)):
+    audio_dict = audio.dict()
+    try:
+        host = "localhost"
+        queue.send_audio(host, audio_dict)
+        new_audio = models.Audio(**audio_dict)
+        db.add(new_audio)
+        db.commit()
+        db.refresh(new_audio)
+        return new_audio
+    except:
+        raise HTTPException(
+            status_code=400,
+            detail='This audio already exists')
 
-@app.delete("/audio/{audio_id}")
-def delete_audio(audio_id: int):
-    db.pop(audio_id - 1)
-    return {"task": "deletion successful"}
+@app.delete("/delete_audio/{audio_id}}")
+def delete_audio(audio_id: int, db=Depends(get_db)):
+    audio = db.query(models.Audio).filter(
+        models.Audio.id == audio_id)
+    if audio.first():
+        audio.delete(synchronize_session=False)
+        db.commit()
+        return f'Audio {audio_id} deleted succesfully'
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail=f'No audio found for id {audio_id}')
