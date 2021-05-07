@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
 import datetime
-from audio_queueing import AudioQueueing
-from database import SessionLocal, engine, get_db
-from schemas import Audio
-import models
+from .audio_queueing import AudioQueueing
+from .database import SessionLocal, engine, get_db
+from .schemas import Audio
+from . import models
 
 models.Base.metadata.create_all(bind=engine)
 queue = AudioQueueing()
@@ -37,14 +37,16 @@ def get_audio(audio_id: int, db=Depends(get_db)):
 async def add_audio(audio: Audio, db=Depends(get_db)):
     audio_dict = audio.dict()
     try:
-        host = "localhost"
+        host = "rabbitmq"
         queue.send_audio(host, audio_dict)
         new_audio = models.Audio(**audio_dict)
         db.add(new_audio)
         db.commit()
         db.refresh(new_audio)
         return new_audio
-    except:
+    except Exception as e:
+        print(e)
+
         raise HTTPException(
             status_code=400,
             detail='This audio already exists')

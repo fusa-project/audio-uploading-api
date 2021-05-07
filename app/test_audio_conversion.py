@@ -1,4 +1,4 @@
-from audio import AudioProcessing as ap
+from .audio import AudioProcessing as ap
 
 audio_path = "audio_input.wav"
 result_filename = 'audio_result.wav'
