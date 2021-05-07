@@ -4,33 +4,13 @@ Audio Uploading API for FuSA Project.
 
 ## Getting Started
 
-### Installation
+### Installation and running
     ```
-    python -m pip install --user virtualenv
-    virtualenv ENV_NAME
-
-    source ENV_NAME/bin/activate
-
-    pip install -r requirements.txt
+    docker-compose up --build
     ```
 
-### Run the example app
-    ```
-    uvicorn test:app --reload
-    ```
-Then, enter on http://127.0.0.1:8000
-
-
-### Run the audio API and send data to RabbitMQ
-First, you must run the Docker with the RabbitMQ local Server:
-```
-docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-```
-
-Then, run the API with the following:
-```
-uvicorn audio_api:app --reload
-```
+### Audio API
+To enter the API, go to http://localhost:8000
 
 This API will receive a POST method with audio metadata with this following structure:
 ```
@@ -45,11 +25,40 @@ This API will receive a POST method with audio metadata with this following stru
     "longitude": float,
     "recorded_at": int
 }
+
+```
+### Database
+You can enter to PGAdmin4 on http://localhost:5050/
+The credentials are as follows:
+```
+user    : pgadmin4@pgadmin.org
+password: admin
 ```
 
-If a request was ok, the api will send the data to the RabbitMQ queue
+Inside PGAdmin4, you must create a server with this data:
+```
+- name    : fusa
+- hostname: database
+- username: admin
+- password: 1234
+```
 
-  * If you want to check if the data was sent, you can run ```python receive_audio.py```.
+### SSH
+You can enter to the virtual docker filesystem:
+```
+docker ps
+CONTAINER_ID   audio-uploading-api_api
+```
+
+Replace the CONTAINER_ID from audio-uploading-api_api IMAGE in the following command:
+```
+docker exec -it CONTAINER_ID bash
+```
+
+### RabbitMQ
+In background, will be running RabbitMQ, so you can send data.
+
+  * If you want to check if a data was sent, you can run ```python app/receive_audio.py```.
 This will show the receiving information in the terminal.
 
 ## Other files
@@ -65,5 +74,6 @@ This will show the receiving information in the terminal.
 
 ## References
 
-* RabbitMQ - https://www.rabbitmq.com/#getstarted
-* FastAPI - https://fastapi.tiangolo.com/tutorial/
+* RabbitMQ       - https://www.rabbitmq.com/#getstarted
+* FastAPI        - https://fastapi.tiangolo.com/tutorial/
+* Docker-compose - https://docs.docker.com/compose/
