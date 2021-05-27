@@ -38,12 +38,9 @@ async def add_audio(audio: Audio, db=Depends(get_db)):
     audio_dict = audio.dict()
     try:
         host = "rabbitmq"
-        queue.send_audio(host, audio_dict)
-        new_audio = models.Audio(**audio_dict)
-        db.add(new_audio)
-        db.commit()
-        db.refresh(new_audio)
-        return new_audio
+        queue_name = "audio_input"
+        queue.send_audio(host, queue_name, audio_dict)
+        return "ok"
     except Exception as e:
         print(e)
 

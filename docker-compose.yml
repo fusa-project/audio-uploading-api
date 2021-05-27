@@ -1,10 +1,20 @@
 version: '3.7'
 
 services:
+  consumer:
+    build: 
+      context: consumer
+      dockerfile: Dockerfile
+    command: python /app/main.py
+    depends_on:
+      - database
+      - rabbitmq
+      - api
   api:
-    build: .
+    build:
+      context: app
+      dockerfile: Dockerfile
     command: uvicorn app.audio_api:app --host 0.0.0.0 --port 8000 --reload
-
     volumes:
       - .:/usr/src/fusa
     ports:
