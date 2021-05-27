@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
 import datetime
 from .audio_queueing import AudioQueueing
 from .database import SessionLocal, engine, get_db
@@ -9,6 +11,14 @@ models.Base.metadata.create_all(bind=engine)
 queue = AudioQueueing()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 @app.get("/")
 def index():
