@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class Audio(BaseModel):
+class PyAudio(BaseModel):
     id: int
     filename: str
     file_path: str
