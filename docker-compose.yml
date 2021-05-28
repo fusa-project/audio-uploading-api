@@ -1,15 +1,17 @@
 version: '3.7'
 
 services:
-  consumer:
-    build: 
-      context: consumer
-      dockerfile: Dockerfile
-    command: python /app/main.py
-    depends_on:
-      - database
-      - rabbitmq
-      - api
+  #consumer:
+  #  build: 
+  #    context: consumer
+  #    dockerfile: Dockerfile
+  #  environment:
+  #    AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
+  #  command: python /app/main.py
+  #  depends_on:
+  #    - database
+  #    - rabbitmq
+  #    - api
   api:
     build:
       context: app
