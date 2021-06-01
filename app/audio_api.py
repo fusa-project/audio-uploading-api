@@ -28,7 +28,7 @@ def index():
 def health():
     return {"status": "200"}
 
-@app.get("/audio/}")
+@app.get("/audio")
 def get_audios(db=Depends(get_db)):
     return db.query(models.Audio).all()
 
